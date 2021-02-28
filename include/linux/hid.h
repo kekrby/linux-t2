@@ -935,6 +935,10 @@ struct hid_report *hid_validate_values(struct hid_device *hid,
 				       unsigned int field_index,
 				       unsigned int report_counts);
 
+u32 hid_item_udata(struct hid_item *item);
+s32 hid_item_sdata(struct hid_item *item);
+u8 *hid_fetch_item(__u8 *start, __u8 *end, struct hid_item *item);
+
 void hid_setup_resolution_multiplier(struct hid_device *hid);
 int hid_open_report(struct hid_device *device);
 int hid_check_keys_pressed(struct hid_device *hid);

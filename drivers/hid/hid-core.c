@@ -342,7 +342,7 @@ static int hid_add_field(struct hid_parser *parser, unsigned report_type, unsign
  * Read data value from item.
  */
 
-static u32 item_udata(struct hid_item *item)
+u32 hid_item_udata(struct hid_item *item)
 {
 	switch (item->size) {
 	case 1: return item->data.u8;
@@ -351,8 +351,9 @@ static u32 item_udata(struct hid_item *item)
 	}
 	return 0;
 }
+EXPORT_SYMBOL_GPL(hid_item_udata);
 
-static s32 item_sdata(struct hid_item *item)
+s32 hid_item_sdata(struct hid_item *item)
 {
 	switch (item->size) {
 	case 1: return item->data.s8;
@@ -361,6 +362,7 @@ static s32 item_sdata(struct hid_item *item)
 	}
 	return 0;
 }
+EXPORT_SYMBOL_GPL(hid_item_sdata);
 
 /*
  * Process a global item.
@@ -393,29 +395,29 @@ static int hid_parser_global(struct hid_parser *parser, struct hid_item *item)
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_USAGE_PAGE:
-		parser->global.usage_page = item_udata(item);
+		parser->global.usage_page = hid_item_udata(item);
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_LOGICAL_MINIMUM:
-		parser->global.logical_minimum = item_sdata(item);
+		parser->global.logical_minimum = hid_item_sdata(item);
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_LOGICAL_MAXIMUM:
 		if (parser->global.logical_minimum < 0)
-			parser->global.logical_maximum = item_sdata(item);
+			parser->global.logical_maximum = hid_item_sdata(item);
 		else
-			parser->global.logical_maximum = item_udata(item);
+			parser->global.logical_maximum = hid_item_udata(item);
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_PHYSICAL_MINIMUM:
-		parser->global.physical_minimum = item_sdata(item);
+		parser->global.physical_minimum = hid_item_sdata(item);
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_PHYSICAL_MAXIMUM:
 		if (parser->global.physical_minimum < 0)
-			parser->global.physical_maximum = item_sdata(item);
+			parser->global.physical_maximum = hid_item_sdata(item);
 		else
-			parser->global.physical_maximum = item_udata(item);
+			parser->global.physical_maximum = hid_item_udata(item);
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_UNIT_EXPONENT:
@@ -423,7 +425,7 @@ static int hid_parser_global(struct hid_parser *parser, struct hid_item *item)
 		 * nibble due to the common misunderstanding of HID
 		 * specification 1.11, 6.2.2.7 Global Items. Attempt to handle
 		 * both this and the standard encoding. */
-		raw_value = item_sdata(item);
+		raw_value = hid_item_sdata(item);
 		if (!(raw_value & 0xfffffff0))
 			parser->global.unit_exponent = hid_snto32(raw_value, 4);
 		else
@@ -431,11 +433,11 @@ static int hid_parser_global(struct hid_parser *parser, struct hid_item *item)
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_UNIT:
-		parser->global.unit = item_udata(item);
+		parser->global.unit = hid_item_udata(item);
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_REPORT_SIZE:
-		parser->global.report_size = item_udata(item);
+		parser->global.report_size = hid_item_udata(item);
 		if (parser->global.report_size > 256) {
 			hid_err(parser->device, "invalid report_size %d\n",
 					parser->global.report_size);
@@ -444,7 +446,7 @@ static int hid_parser_global(struct hid_parser *parser, struct hid_item *item)
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_REPORT_COUNT:
-		parser->global.report_count = item_udata(item);
+		parser->global.report_count = hid_item_udata(item);
 		if (parser->global.report_count > HID_MAX_USAGES) {
 			hid_err(parser->device, "invalid report_count %d\n",
 					parser->global.report_count);
@@ -453,7 +455,7 @@ static int hid_parser_global(struct hid_parser *parser, struct hid_item *item)
 		return 0;
 
 	case HID_GLOBAL_ITEM_TAG_REPORT_ID:
-		parser->global.report_id = item_udata(item);
+		parser->global.report_id = hid_item_udata(item);
 		if (parser->global.report_id == 0 ||
 		    parser->global.report_id >= HID_MAX_IDS) {
 			hid_err(parser->device, "report_id %u is invalid\n",
@@ -478,7 +480,7 @@ static int hid_parser_local(struct hid_parser *parser, struct hid_item *item)
 	unsigned n;
 	__u32 count;
 
-	data = item_udata(item);
+	data = hid_item_udata(item);
 
 	switch (item->tag) {
 	case HID_LOCAL_ITEM_TAG_DELIMITER:
@@ -610,7 +612,7 @@ static int hid_parser_main(struct hid_parser *parser, struct hid_item *item)
 
 	hid_concatenate_last_usage_page(parser);
 
-	data = item_udata(item);
+	data = hid_item_udata(item);
 
 	switch (item->tag) {
 	case HID_MAIN_ITEM_TAG_BEGIN_COLLECTION:
@@ -711,12 +713,19 @@ static void hid_device_release(struct device *dev)
 	kfree(hid);
 }
 
-/*
+/**
+ * hid_fetch_item - fetch an item from a report
+ *
+ * @start: the current position in the report buffer to read the next item from
+ * @end: the end of the report buffer
+ * @item: the item struct to fill in
+ *
  * Fetch a report description item from the data stream. We support long
  * items, though they are not used yet.
+ *
+ * Return: the position of the next item in the report
  */
-
-static u8 *fetch_item(__u8 *start, __u8 *end, struct hid_item *item)
+u8 *hid_fetch_item(__u8 *start, __u8 *end, struct hid_item *item)
 {
 	u8 b;
 
@@ -777,6 +786,7 @@ static u8 *fetch_item(__u8 *start, __u8 *end, struct hid_item *item)
 
 	return NULL;
 }
+EXPORT_SYMBOL_GPL(hid_fetch_item);
 
 static void hid_scan_input_usage(struct hid_parser *parser, u32 usage)
 {
@@ -835,7 +845,7 @@ static int hid_scan_main(struct hid_parser *parser, struct hid_item *item)
 
 	hid_concatenate_last_usage_page(parser);
 
-	data = item_udata(item);
+	data = hid_item_udata(item);
 
 	switch (item->tag) {
 	case HID_MAIN_ITEM_TAG_BEGIN_COLLECTION:
@@ -895,7 +905,7 @@ static int hid_scan_report(struct hid_device *hid)
 	 * be robust against hid errors. Those errors will be raised by
 	 * hid_open_report() anyway.
 	 */
-	while ((start = fetch_item(start, end, &item)) != NULL)
+	while ((start = hid_fetch_item(start, end, &item)) != NULL)
 		dispatch_type[item.type](parser, &item);
 
 	/*
@@ -1258,7 +1268,7 @@ int hid_open_report(struct hid_device *device)
 		device->collection[i].parent_idx = -1;
 
 	ret = -EINVAL;
-	while ((next = fetch_item(start, end, &item)) != NULL) {
+	while ((next = hid_fetch_item(start, end, &item)) != NULL) {
 		start = next;
 
 		if (item.format != HID_ITEM_FORMAT_SHORT) {
