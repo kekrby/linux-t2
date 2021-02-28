@@ -143,6 +143,7 @@ config HID_APPLE_IBRIDGE
 	depends on ACPI
 	depends on USB_HID
 	depends on X86 || COMPILE_TEST
+	imply HID_APPLE_TOUCHBAR
 	imply HID_SENSOR_HUB
 	imply HID_SENSOR_ALS
 	help
@@ -153,6 +154,15 @@ config HID_APPLE_IBRIDGE
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called apple-ibridge.
+
+config HID_APPLE_TOUCHBAR
+	tristate "Apple Touch Bar"
+	help
+	Say Y here if you want support for the Touch Bar on recent
+	MacBook Pros.
+
+	To compile this driver as a module, choose M here: the
+	module will be called apple-touchbar.
 
 config HID_APPLEIR
 	tristate "Apple infrared receiver"
