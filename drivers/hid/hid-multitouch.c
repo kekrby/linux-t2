@@ -216,6 +216,7 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app);
 #define MT_CLS_GOOGLE				0x0111
 #define MT_CLS_RAZER_BLADE_STEALTH		0x0112
 #define MT_CLS_SMART_TECH			0x0113
+#define MT_CLS_APPLE_TOUCHBAR			0x0114
 
 #define MT_DEFAULT_MAXCONTACT	10
 #define MT_MAX_MAXCONTACT	250
@@ -399,6 +400,14 @@ static const struct mt_class mt_classes[] = {
 			MT_QUIRK_IGNORE_DUPLICATES |
 			MT_QUIRK_CONTACT_CNT_ACCURATE |
 			MT_QUIRK_SEPARATE_APP_REPORT,
+	},
+	{ .name = MT_CLS_APPLE_TOUCHBAR,
+		.quirks = MT_QUIRK_HOVERING |
+			MT_QUIRK_ALWAYS_VALID |
+			MT_QUIRK_TOUCH_IS_TIPSTATE |
+			MT_QUIRK_SLOT_IS_CONTACTID_MINUS_ONE |
+			MT_QUIRK_MAXCONTACT_IS_TOUCHES_BY_REPORT,
+		.is_direct = true,
 	},
 	{ }
 };
@@ -2242,6 +2251,14 @@ static const struct hid_device_id mt_devices[] = {
 	{ .driver_data = MT_CLS_NSMU,
 		MT_USB_DEVICE(USB_VENDOR_ID_XIROKU,
 			USB_DEVICE_ID_XIROKU_CSR2) },
+
+	/* Apple Touch Bars */
+	{ .driver_data = MT_CLS_APPLE_TOUCHBAR,
+		MT_USB_DEVICE(USB_VENDOR_ID_APPLE,
+			      USB_DEVICE_ID_APPLE_IBRIDGE) },
+	{ .driver_data = MT_CLS_APPLE_TOUCHBAR,
+		MT_USB_DEVICE(USB_VENDOR_ID_APPLE,
+			      USB_DEVICE_ID_APPLE_TOUCHBAR_DISPLAY) },
 
 	/* Google MT devices */
 	{ .driver_data = MT_CLS_GOOGLE,
