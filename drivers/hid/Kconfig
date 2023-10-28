@@ -137,6 +137,19 @@ config HID_APPLE
 	Say Y here if you want support for keyboards of	Apple iBooks, PowerBooks,
 	MacBooks, MacBook Pros and Apple Aluminum.
 
+config HID_APPLEIB
+	tristate "Apple iBridge"
+	depends on ACPI
+	help
+	  This module provides the core support for the Apple T1 chip found on
+	  2016 and 2017 MacBookPro's, also known as the iBridge. The drivers
+	  for the Touch Bar (hid-appletb-*, hid-multitouch, appletbdrm) and
+	  light sensor (hid-sensor-hub and hid-sensor-als) need to be enabled
+	  separately.
+
+	  To compile this driver as a module, choose M here: the module will be
+	  called hid-appleib.
+
 config HID_APPLEIR
 	tristate "Apple infrared receiver"
 	depends on (USB_HID)

@@ -836,6 +836,12 @@ static void hid_scan_collection(struct hid_parser *parser, unsigned type)
 					(HID_UP_GOOGLEVENDOR | 0x0001))
 				parser->device->group =
 					HID_GROUP_VIVALDI;
+
+	if (hid->vendor == USB_VENDOR_ID_APPLE &&
+	    hid->product == USB_DEVICE_ID_APPLE_IBRIDGE &&
+	    parser->global.usage_page == 0xff12 &&
+	    hid->dev.parent && hid->dev.parent->bus != &hid_bus_type)
+		parser->scan_flags |= HID_SCAN_FLAG_APPLEIB;
 }
 
 static int hid_scan_main(struct hid_parser *parser, struct hid_item *item)
@@ -914,6 +920,9 @@ static int hid_scan_report(struct hid_device *hid)
 	if ((parser->scan_flags & HID_SCAN_FLAG_MT_WIN_8) &&
 	    (hid->group == HID_GROUP_MULTITOUCH))
 		hid->group = HID_GROUP_MULTITOUCH_WIN_8;
+
+	if (parser->scan_flags & HID_SCAN_FLAG_APPLEIB)
+		hid->group = HID_GROUP_APPLEIB;
 
 	/*
 	 * Vendor specific handlings

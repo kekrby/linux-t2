@@ -386,6 +386,7 @@ struct hid_item {
 #define HID_GROUP_STEAM				0x0103
 #define HID_GROUP_LOGITECH_27MHZ_DEVICE		0x0104
 #define HID_GROUP_VIVALDI			0x0105
+#define HID_GROUP_APPLEIB			0x0106
 
 /*
  * HID protocol status
@@ -683,6 +684,7 @@ static inline void hid_set_drvdata(struct hid_device *hdev, void *data)
 #define HID_SCAN_FLAG_MT_WIN_8			BIT(0)
 #define HID_SCAN_FLAG_VENDOR_SPECIFIC		BIT(1)
 #define HID_SCAN_FLAG_GD_POINTER		BIT(2)
+#define HID_SCAN_FLAG_APPLEIB			BIT(3)
 
 struct hid_parser {
 	struct hid_global     global;
