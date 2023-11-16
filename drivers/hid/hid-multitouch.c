@@ -73,6 +73,7 @@ MODULE_LICENSE("GPL");
 #define MT_QUIRK_DISABLE_WAKEUP		BIT(21)
 #define MT_QUIRK_ORIENTATION_INVERT	BIT(22)
 #define MT_QUIRK_TOUCH_IS_TIPSTATE	BIT(23)
+#define MT_QUIRK_MAXCONTACT_IS_TOUCHES_BY_REPORT	BIT(24)
 
 #define MT_INPUTMODE_TOUCHSCREEN	0x02
 #define MT_INPUTMODE_TOUCHPAD		0x03
@@ -1309,6 +1310,9 @@ static int mt_touch_input_configured(struct hid_device *hdev,
 	struct mt_class *cls = &td->mtclass;
 	struct input_dev *input = hi->input;
 	int ret;
+
+	if (cls->quirks & MT_QUIRK_MAXCONTACT_IS_TOUCHES_BY_REPORT)
+		td->maxcontacts = app->touches_by_report;
 
 	if (!td->maxcontacts)
 		td->maxcontacts = MT_DEFAULT_MAXCONTACT;
