@@ -2792,7 +2792,8 @@ int hid_add_device(struct hid_device *hdev)
 	if (hid_ignore_special_drivers) {
 		hdev->group = HID_GROUP_GENERIC;
 	} else if (!hdev->group &&
-		   !(hdev->quirks & HID_QUIRK_HAVE_SPECIAL_DRIVER)) {
+		   (!(hdev->quirks & HID_QUIRK_HAVE_SPECIAL_DRIVER) ||
+		    hdev->quirks & HID_QUIRK_FORCE_REPORT_SCAN)) {
 		ret = hid_scan_report(hdev);
 		if (ret)
 			hid_warn(hdev, "bad device descriptor (%d)\n", ret);
